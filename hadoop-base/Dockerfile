@@ -43,8 +43,11 @@ LABEL organization="gradiant.org"
 ARG VERSION=2.7.7
 ENV HADOOP_VERSION=$VERSION
 
-COPY --from=builder /opt/hadoop/ /
+COPY --from=builder /opt/hadoop/ /opt/hadoop/
 
+ENV HADOOP_PREFIX=/opt/hadoop
+ENV HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop
+ENV PATH=$PATH:$HADOOP_PREFIX/bin
 RUN apk add --no-cache \
         bash \
         perl \
@@ -55,11 +58,9 @@ RUN apk add --no-cache \
         libtirpc \
         snappy \
         zlib && \
-    cp /etc/hadoop/mapred-site.xml.template /etc/hadoop/mapred-site.xml && \
+    cp $HADOOP_CONF_DIR/mapred-site.xml.template $HADOOP_CONF_DIR/mapred-site.xml && \
     mkdir -p /logs
 
-ENV HADOOP_PREFIX=/
-ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV MULTIHOMED_NETWORK=1
 
 
