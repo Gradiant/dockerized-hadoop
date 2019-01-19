@@ -30,6 +30,10 @@ RUN ln -s /opt/hadoop-2.7.7-src /opt/hadoop-src && cd /opt/hadoop-src && \
     && sed -ri 's#^(include_directories.*)#\1\n    /usr/include/tirpc#' hadoop-tools/hadoop-pipes/src/CMakeLists.txt \
     && sed -ri 's/^( *pthread)/\1\n    tirpc/g' hadoop-tools/hadoop-pipes/src/CMakeLists.txt
 RUN cd /opt/hadoop-src && mvn package -Pdist,native -DskipTests -DskipDocs -Dtar
+RUN mkdir -p /opt/hadoop/usr/lib
+RUN cp -r /opt/hadoop-src/hadoop-dist/target/hadoop-2.7.7/* /opt/hadoop/
+RUN cp -r /opt/hadoop-src/hadoop-common-project/hadoop-common/target/native/target/usr/local/lib/* /opt/hadoop/lib/native/
+RUN cp -r /opt/hadoop-src/hadoop-hdfs-project/hadoop-hdfs/target/native/target/usr/local/lib/* /opt/hadoop/lib/native/
 
 
 FROM openjdk:8u171-jre-alpine3.8 as hadoop-base
@@ -39,7 +43,7 @@ LABEL organization="gradiant.org"
 ARG VERSION=2.7.7
 ENV HADOOP_VERSION=$VERSION
 
-COPY --from=builder /opt/hadoop-$HADOOP_VERSION-src/hadoop-dist/target/hadoop-$HADOOP_VERSION.tar.gz /
+COPY --from=builder /opt/hadoop/ /
 
 RUN apk add --no-cache \
         bash \
@@ -51,18 +55,13 @@ RUN apk add --no-cache \
         libtirpc \
         snappy \
         zlib && \
-    mkdir /opt && \
-    tar xvzf /hadoop-$HADOOP_VERSION.tar.gz -C /opt &&  rm /hadoop-$HADOOP_VERSION.tar.gz &&\
-    ln -s /opt/hadoop-$HADOOP_VERSION /opt/hadoop && \
-    ln -s /opt/hadoop-$HADOOP_VERSION/etc/hadoop /etc/hadoop && \
     cp /etc/hadoop/mapred-site.xml.template /etc/hadoop/mapred-site.xml && \
-    mkdir /opt/hadoop-$HADOOP_VERSION/logs && \
-    mkdir /hadoop-data
+    mkdir -p /logs
 
-ENV HADOOP_PREFIX=/opt/hadoop-$HADOOP_VERSION
+ENV HADOOP_PREFIX=/
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV MULTIHOMED_NETWORK=1
-ENV PATH $HADOOP_PREFIX/bin/:$PATH
+
 
 COPY entrypoint.sh /entrypoint.sh
 

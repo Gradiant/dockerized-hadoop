@@ -8,6 +8,7 @@ fi
 
 if [ -z "$CLUSTER_NAME" ]; then
   echo "Cluster name not specified"
+  echo "Use CLUSTER_NAME env variable to specify a cluster name"
   exit 2
 fi
 

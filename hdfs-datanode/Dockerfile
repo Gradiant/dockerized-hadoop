@@ -6,7 +6,7 @@ LABEL organization="gradiant.org"
 
 ENV HDFS_CONF_dfs_datanode_data_dir=file:///hadoop/dfs/data
 RUN mkdir -p /hadoop/dfs/data
-VOLUME /hadoop/dfs/data
+VOLUME /hadoop
 
 ADD run.sh /run.sh
 
