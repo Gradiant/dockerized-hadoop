@@ -9,7 +9,7 @@ Available hadoop services are:
 - HDFS datanode
 
 
-## Common Configuration
+## Common Hadoop Configuration
 
 The base image provides a custom entrypoint that uses environment variables to set hadoop configuration file properties.
 
@@ -49,15 +49,19 @@ To enable [multihomed networks](https://hadoop.apache.org/docs/stable/hadoop-pro
 
 ## HDFS Configuration
 
-hdfs-namenode container must provide a cluster name through the `CLUSTER_NAME` environment variable. 
+hdfs-namenode container accepts `CLUSTER_NAME` environment variable which defaults to "hadoop". 
+
+## Optional non-hadoop configuration
+Image also accepts configuration through simple environment variable that translates into specific hadoop configuration variables.
+- HDFS_NAMENODE_URL in the form of 'hdfs://NAMENODE_HOST:NAMENODE_PORT'
 
 ### Example of usage
 
-Example of a spark standalone deployment with a spark master and three spark worker.
+Example of a hdfs sinlge namenode and three datanodes.
 
 
 ```
-docker run -d --name hdfs-namenode -e CLUSTER_NAME=hdfs-cluster gradiant/hdfs-namenode
+docker run -d --name hdfs-namenode gradiant/hdfs-namenode
 docker run -d --link hdfs-namenode --name hdfs-datanode1 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
 docker run -d --link hdfs-namenode --name hdfs-datanode2 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
 docker run -d --link hdfs-namenode --name hdfs-datanode3 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
