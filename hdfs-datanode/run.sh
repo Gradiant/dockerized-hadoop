@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$HDFS_NAMENODE_URL" ]; then
+if [ -z "$HDFS_NAMENODE_URL" ] && [ -z "$CORE_CONF_fs_defaultFS" ]; then
   echo "hdfs namenode url not specified"
   echo "Use HDFS_NAMENODE_URL or CORE_CONF_fs_defaultFS to specify hdfs namenode url"
   exit 2
