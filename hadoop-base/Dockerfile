@@ -57,7 +57,8 @@ RUN apk add --no-cache \
         libressl-dev \
         libtirpc \
         snappy \
-        zlib && \
+        zlib \
+        curl && \
     cp $HADOOP_CONF_DIR/mapred-site.xml.template $HADOOP_CONF_DIR/mapred-site.xml && \
     mkdir -p /logs
 
