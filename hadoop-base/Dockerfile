@@ -50,6 +50,7 @@ ENV HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop
 ENV PATH=$PATH:$HADOOP_PREFIX/bin
 RUN apk add --no-cache \
         bash \
+        procps \
         perl \
         bzip2 \
         fts \
