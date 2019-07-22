@@ -1,4 +1,4 @@
-FROM openjdk:8u171-jdk-alpine3.8 as builder
+FROM openjdk:8-jdk-alpine as builder
 
 LABEL maintainer="cgiraldo@gradiant.org"
 LABEL organization="gradiant.org"
@@ -6,7 +6,7 @@ LABEL organization="gradiant.org"
 ARG VERSION=2.7.7
 ENV HADOOP_VERSION=$VERSION
 
-RUN apk add --no-cache bash build-base maven autoconf automake libtool cmake zlib-dev libressl-dev fts-dev  libtirpc-dev && mkdir /opt
+RUN apk add --no-cache bash build-base maven autoconf automake libtool cmake zlib-dev libressl-dev fts-dev  libtirpc-dev && mkdir -p /opt
 # Building Protobuf 2.5.0
 RUN cd /opt && wget https://github.com/google/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.gz && \
   tar xvf protobuf-2.5.0.tar.gz && cd protobuf-2.5.0 && ./autogen.sh && ./configure --prefix=/usr && \
@@ -36,7 +36,7 @@ RUN cp -r /opt/hadoop-src/hadoop-common-project/hadoop-common/target/native/targ
 RUN cp -r /opt/hadoop-src/hadoop-hdfs-project/hadoop-hdfs/target/native/target/usr/local/lib/* /opt/hadoop/lib/native/
 
 
-FROM openjdk:8u171-jre-alpine3.8 as hadoop-base
+FROM openjdk:8-jre-alpine as hadoop-base
 
 LABEL maintainer="cgiraldo@gradiant.org"
 LABEL organization="gradiant.org"
