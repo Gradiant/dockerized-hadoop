@@ -3,8 +3,6 @@ FROM openjdk:8-jdk-alpine as builder
 LABEL maintainer="cgiraldo@gradiant.org"
 LABEL organization="gradiant.org"
 
-ARG VERSION=2.7.7
-ENV HADOOP_VERSION=$VERSION
 
 RUN apk add --no-cache bash build-base maven autoconf automake libtool cmake zlib-dev libressl-dev fts-dev  libtirpc-dev && mkdir -p /opt
 # Building Protobuf 2.5.0
@@ -12,42 +10,52 @@ RUN cd /opt && wget https://github.com/google/protobuf/releases/download/v2.5.0/
   tar xvf protobuf-2.5.0.tar.gz && cd protobuf-2.5.0 && ./autogen.sh && ./configure --prefix=/usr && \
   make && make install
 
-# building hadoop
+# Building intel Intelligent Storage Acceleration Library
+RUN apk add --no-cache yasm
+RUN wget -qO- https://github.com/intel/isa-l/archive/v2.27.0.tar.gz | tar xvz -C /opt
+RUN cd /opt/isa-l-2.27.0 && \
+    make -f Makefile.unx && \
+    cp bin/libisal.so bin/libisal.so.2 /lib/
 
-RUN wget -qO- http://apache.rediris.es/hadoop/common/hadoop-2.7.7/hadoop-2.7.7-src.tar.gz | tar xvz -C /opt
-RUN ln -s /opt/hadoop-2.7.7-src /opt/hadoop-src && cd /opt/hadoop-src && \
+# building hadoop
+ARG version=3.1.2
+ENV HADOOP_VERSION=$version
+
+RUN apk add tar --no-cache libexecinfo-dev bzip2-dev snappy-dev zstd-dev openssl-dev git
+
+RUN wget -qO- http://apache.rediris.es/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION-src.tar.gz | tar xvz -C /opt
+RUN ln -s /opt/hadoop-$HADOOP_VERSION-src /opt/hadoop-src && cd /opt/hadoop-src && \
     ## - error: 'sys_nerr' undeclared (first use in this function)
-    sed -ri 's/^#if defined\(__sun\)/#if 1/g' hadoop-common-project/hadoop-common/src/main/native/src/exception.c \
-    ## - bad substitution at line 11
-    && sed -ri 's/executable="sh"/executable="bash"/g' hadoop-project-dist/pom.xml \
-    ## - error: 'sys_nerr' undeclared (first use in this function)
-    && sed -ri 's/^#if defined\(__sun\)/#if 1/g' hadoop-common-project/hadoop-common/src/main/native/src/exception.c \
-    ## - error: undefined reference to fts_*
-    && sed -ri 's/^( *container)/\1\n    fts/g' hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/CMakeLists.txt \
+    sed -ri 's/^#if defined\(__sun\)/#if 1/g' hadoop-common-project/hadoop-common/src/main/native/src/exception.c && \
     ## - warning: implicit declaration of function 'setnetgrent'
-    && sed -ri 's/^(.*JniBasedUnixGroupsNetgroupMapping.c)/#\1/g' hadoop-common-project/hadoop-common/src/CMakeLists.txt \
-    ## - fatal error: rpc/types.h: No such file or directory
-    && sed -ri 's#^(include_directories.*)#\1\n    /usr/include/tirpc#' hadoop-tools/hadoop-pipes/src/CMakeLists.txt \
-    && sed -ri 's/^( *pthread)/\1\n    tirpc/g' hadoop-tools/hadoop-pipes/src/CMakeLists.txt
-RUN cd /opt/hadoop-src && mvn package -Pdist,native -DskipTests -DskipDocs -Dtar
-RUN mkdir -p /opt/hadoop/usr/lib
-RUN cp -r /opt/hadoop-src/hadoop-dist/target/hadoop-2.7.7/* /opt/hadoop/
-RUN cp -r /opt/hadoop-src/hadoop-common-project/hadoop-common/target/native/target/usr/local/lib/* /opt/hadoop/lib/native/
-RUN cp -r /opt/hadoop-src/hadoop-hdfs-project/hadoop-hdfs/target/native/target/usr/local/lib/* /opt/hadoop/lib/native/
+    sed -ri 's/^(.*JniBasedUnixGroupsNetgroupMapping.c)/#\1/g' hadoop-common-project/hadoop-common/src/CMakeLists.txt
+RUN cd /opt/hadoop-src && mvn package -f hadoop-common-project -Pdist,native -DskipTests -DskipDocs -Dtar
+RUN cd /opt/hadoop-src && mvn package -f hadoop-hdfs-project -Pdist,native -DskipTests -DskipDocs -Dtar
+#mapreduce native profile produce an error in Apache Hadoop MapReduce NativeTask due to alpine linux and backtrace libexecinfo support so we disable it
+RUN cd /opt/hadoop-src && mvn package -f hadoop-mapreduce-project -Pdist -DskipTests -DskipDocs -Dtar
+RUN cd /opt/hadoop-src && mvn package -f hadoop-yarn-project -Pdist,native -DskipTests -DskipDocs -Dtar
+
+RUN cd /opt/hadoop-src && mvn package -f hadoop-client-modules -Pdist,native -DskipTests -DskipDocs -Dtar
+
+RUN cd /opt/hadoop-src && mvn --projects hadoop-dist package -DskipTests -DskipDocs -Dtar
+RUN mv /opt/hadoop-src/hadoop-dist/target/hadoop-${HADOOP_VERSION} /opt/
+RUN ln -s /opt/hadoop-${HADOOP_VERSION} /opt/hadoop
 
 
 FROM openjdk:8-jre-alpine as hadoop-base
 
-LABEL maintainer="cgiraldo@gradiant.org"
-LABEL organization="gradiant.org"
-ARG VERSION=2.7.7
-ENV HADOOP_VERSION=$VERSION
+LABEL maintainer="cgiraldo@gradiant.org" \
+      organization="gradiant.org"
 
-COPY --from=builder /opt/hadoop/ /opt/hadoop/
+ARG VERSION=3.1.2
+ENV HADOOP_VERSION=$VERSION \
+    HADOOP_HOME=/opt/hadoop
 
-ENV HADOOP_PREFIX=/opt/hadoop
-ENV HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop
-ENV PATH=$PATH:$HADOOP_PREFIX/bin
+ENV HADOOP_PREFIX=$HADOOP_HOME \
+    HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop \
+    PATH=$PATH:$HADOOP_HOME/bin \
+    MULTIHOMED_NETWORK=1
+
 RUN apk add --no-cache \
         bash \
         procps \
@@ -55,16 +63,15 @@ RUN apk add --no-cache \
         bzip2 \
         fts \
         fuse \
-        libressl-dev \
+        openssl-dev \
         libtirpc \
         snappy \
         zlib \
+        zstd \
         curl && \
-    cp $HADOOP_CONF_DIR/mapred-site.xml.template $HADOOP_CONF_DIR/mapred-site.xml && \
     mkdir -p /logs
 
-ENV MULTIHOMED_NETWORK=1
-
+COPY --from=builder /opt/hadoop /opt/hadoop
 
 COPY entrypoint.sh /entrypoint.sh
 

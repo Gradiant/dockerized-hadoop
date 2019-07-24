@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=2.7.7
+VERSION=3.1.2
 
 docker build --build-arg VERSION=$VERSION  --target hadoop-base -t gradiant/hadoop-base:$VERSION hadoop-base
 docker build --build-arg VERSION=$VERSION -t gradiant/hdfs-namenode:$VERSION hdfs-namenode

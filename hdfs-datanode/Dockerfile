@@ -1,4 +1,4 @@
-ARG VERSION=2.7.7
+ARG VERSION=3.1.2
 FROM gradiant/hadoop-base:$VERSION
 
 LABEL maintainer="cgiraldo@gradiant.org"
@@ -11,6 +11,7 @@ ENV HDFS_CONF_dfs_datanode_data_dir=file:///hadoop/dfs/data
 RUN adduser -D -S -u 1000 -G root hdfs && \
     mkdir -p /hadoop/dfs/data && \
     chown -R hdfs:root /hadoop && \
+    chown -R hdfs:root $HADOOP_HOME && \
     chown -R hdfs:root $HADOOP_CONF_DIR
 
 USER hdfs
