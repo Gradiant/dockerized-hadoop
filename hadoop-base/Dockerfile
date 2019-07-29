@@ -67,7 +67,7 @@ RUN apk add --no-cache \
         libtirpc \
         snappy \
         zlib \
-        zstd \
+        zstd-dev \
         curl && \
     mkdir -p /logs
 
