@@ -2,7 +2,7 @@ These are docker images of [Apache Hadoop](https://hadoop.apache.org/).
 
 ## Properties
 
-The images have a small footprint ( base docker image is openjdk:8u171-jre-alpine3.8).
+The images have a small footprint ( base docker image is openjdk:8-jre-alpine).
 
 Available hadoop services are:
 - HDFS namenode
@@ -61,12 +61,17 @@ Example of a hdfs sinlge namenode and three datanodes.
 
 
 ```
-docker run -d --name hdfs-namenode gradiant/hdfs-namenode
+docker run -d --name hdfs-namenode -p 50070:50070 gradiant/hdfs-namenode
 docker run -d --link hdfs-namenode --name hdfs-datanode1 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
 docker run -d --link hdfs-namenode --name hdfs-datanode2 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
 docker run -d --link hdfs-namenode --name hdfs-datanode3 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
 ```
-ls
+
+Testing: native library support:
+
+```
+docker exec -ti hdfs-namenode hadoop checknative -a
+```
 
 Testing: creating and listing and example folder in hdfs
 ```
