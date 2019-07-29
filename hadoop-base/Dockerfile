@@ -4,7 +4,7 @@ LABEL maintainer="cgiraldo@gradiant.org"
 LABEL organization="gradiant.org"
 
 
-RUN apk add --no-cache bash build-base maven autoconf automake libtool cmake zlib-dev libressl-dev fts-dev  libtirpc-dev && mkdir -p /opt
+RUN apk add --no-cache bash build-base maven autoconf automake libtool cmake zlib-dev openssl-dev fts-dev  libtirpc-dev && mkdir -p /opt
 # Building Protobuf 2.5.0
 RUN cd /opt && wget https://github.com/google/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.gz && \
   tar xvf protobuf-2.5.0.tar.gz && cd protobuf-2.5.0 && ./autogen.sh && ./configure --prefix=/usr && \
@@ -72,6 +72,7 @@ RUN apk add --no-cache \
     mkdir -p /logs
 
 COPY --from=builder /opt/hadoop /opt/hadoop
+COPY --from=builder /lib/libisal.* /lib/
 
 COPY entrypoint.sh /entrypoint.sh
 
