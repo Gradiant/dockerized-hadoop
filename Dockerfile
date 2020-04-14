@@ -5,6 +5,7 @@ LABEL maintainer="cgiraldo@gradiant.org" \
 
 ARG version=2.7.7
 ENV HADOOP_VERSION=$version \
+    HADOOP_PREFIX=/opt/hadoop \
     HADOOP_HOME=/opt/hadoop \
     HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop \
     PATH=$PATH:/opt/hadoop/bin \
@@ -15,8 +16,8 @@ ENV HADOOP_VERSION=$version \
     USER=hdfs
 
 
-RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/* && \
-    wget -qO- https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz -C /opt && \
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* && \
+    curl -SL https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz -C /opt && \
     ln -s /opt/hadoop-$HADOOP_VERSION /opt/hadoop && \
     # remove documentation from container image
     rm -r /opt/hadoop/share/doc && \
