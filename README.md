@@ -1,13 +1,10 @@
-These are docker images of [Apache Hadoop](https://hadoop.apache.org/).
+These are docker images of [Apache Hadoop](https://hadoop.apache.org/) HDFS service.
 
-## Properties
+## Hadoop HDFS services
 
-The images have a small footprint ( base docker image is openjdk:8u171-jre-alpine3.8).
-
-Available hadoop services are:
-- HDFS namenode
-- HDFS datanode
-
+The base image provides a custom entrypoint gets an argument for the type of hdfs server to run:
+- namenode
+- datanode
 
 ## Common Hadoop Configuration
 
@@ -43,22 +40,25 @@ _dfs.replication_ of _hdfs-site.xml_ file should be provided as:
 
 ``` HDFS_CONF_dfs_replication```
  
-#### Network
+The image provides de following default configuration as environment variables:
 
-To enable [multihomed networks](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsMultihoming.html), set the environment variable `MULTIHOMED_NETWORK`.
+| Env variable | Default Value  |
+|---|---|
+| CORE_CONF_fs_defaultFS | hdfs://`hostname -f`:8020 |
+| HDFS_CONF_dfs_namenode_name_dir | file:///hadoop/dfs/name |
+| HDFS_CONF_dfs_datanode_data_dir |file:///hadoop/dfs/data |
+| CLUSTER_NAME | hadoop | 
+| MULTIHOMED_NETWORK | 1 |
 
-## HDFS Configuration
+The environment variable `MULTIHOMED_NETWORK` configures [multihomed networks].
 
-hdfs-namenode container accepts `CLUSTER_NAME` environment variable which defaults to "hadoop". 
-
-## Optional non-hadoop configuration
+### Optional non-hadoop configuration
 Image also accepts configuration through simple environment variable that translates into specific hadoop configuration variables.
 - HDFS_NAMENODE_URL in the form of 'hdfs://NAMENODE_HOST:NAMENODE_PORT'
 
-### Example of usage
+## Example of usage
 
 Example of a hdfs sinlge namenode and three datanodes.
-
 
 ```
 docker run -d --name hdfs-namenode gradiant/hdfs-namenode
