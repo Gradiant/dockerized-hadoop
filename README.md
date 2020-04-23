@@ -57,19 +57,26 @@ Image also accepts configuration through simple environment variable that transl
 - HDFS_NAMENODE_URL in the form of 'hdfs://NAMENODE_HOST:NAMENODE_PORT'
 
 ## Example of usage
+We provide two docker-compose files to deploy a 3-datanode and a single-datanode hdfs clusters.
 
-Example of a hdfs sinlge namenode and three datanodes.
+```
+HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  up -d
+```
+Then, Hdfs UI is available at:
+- [http://localhost:50070](http://localhost:50070) for hadoop 2.x
+- [http://localhost:9870](http://localhost:9870) for hadoop 3.x
 
+To undeploy:
 ```
-docker run -d --name hdfs-namenode gradiant/hdfs-namenode
-docker run -d --link hdfs-namenode --name hdfs-datanode1 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
-docker run -d --link hdfs-namenode --name hdfs-datanode2 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
-docker run -d --link hdfs-namenode --name hdfs-datanode3 -e CORE_CONF_fs_defaultFS=hdfs://hdfs-namenode:8020 gradiant/hdfs-datanode
+HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  down
 ```
-ls
 
-Testing: creating and listing and example folder in hdfs
-```
-docker exec -ti hdfs-namenode hdfs dfs -mkdir /example
-docker exec -ti hdfs-namenode hdfs dfs -ls /
-```
+## Testing
+
+To test the cluster we provide two scripts:
+
+- `test-hdfs-single-datanode.sh `
+- `test-hdfs-multiple-datanodes.sh `
+
+They deploy a hdfs cluster, create a folder in hdfs, copy a file from local to the folder, and remove file and folder. Finally they stop and remove the cluster containers.
+
