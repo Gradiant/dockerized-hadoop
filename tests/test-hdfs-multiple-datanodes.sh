@@ -1,5 +1,6 @@
 #!/bin/bash
-HADOOP_VERSION="${HADOOP_VERSION:-2.7.7}"
+set -x
+HADOOP_VERSION="${HADOOP_VERSION:-3.1.3}"
 
 HADOOP_VERSION=$HADOOP_VERSION docker-compose up -d
 

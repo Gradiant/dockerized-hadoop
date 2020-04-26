@@ -60,7 +60,7 @@ Image also accepts configuration through simple environment variable that transl
 We provide two docker-compose files to deploy a 3-datanode and a single-datanode hdfs clusters.
 
 ```
-HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  up -d
+HADOOP_VERSION=3.1.3 docker-compose -f tests/docker-compose.yml  up -d
 ```
 Then, Hdfs UI is available at:
 - [http://localhost:50070](http://localhost:50070) for hadoop 2.x
@@ -68,7 +68,7 @@ Then, Hdfs UI is available at:
 
 To undeploy:
 ```
-HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  down
+HADOOP_VERSION=3.1.3 docker-compose -f tests/docker-compose.yml  down
 ```
 
 ## Testing
