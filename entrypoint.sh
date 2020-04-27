@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Set some sensible defaults
 export CORE_CONF_fs_defaultFS=${CORE_CONF_fs_defaultFS:-${HDFS_NAMENODE_URL:-hdfs://`hostname -f`:8020}}
@@ -72,7 +72,7 @@ case "$node_type" in
           echo "Formatting namenode name directory: $namedir"
           $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode -format $CLUSTER_NAME
         fi
-        $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode $@
+        exec $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR namenode $@
       ;;
 
     (datanode)
@@ -82,7 +82,7 @@ case "$node_type" in
             echo "Creating not existing datanode directory: $datadir"
             mkdir -p $datadir
         fi
-        $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR datanode $@
+        exec $HADOOP_HOME/bin/hdfs --config $HADOOP_CONF_DIR datanode $@
       ;;
     (*)
       exec "$@"
