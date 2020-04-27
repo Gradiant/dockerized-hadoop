@@ -60,7 +60,7 @@ Image also accepts configuration through simple environment variable that transl
 We provide two docker-compose files to deploy a 3-datanode and a single-datanode hdfs clusters.
 
 ```
-HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  up -d
+docker-compose up -d
 ```
 Then, Hdfs UI is available at:
 - [http://localhost:50070](http://localhost:50070) for hadoop 2.x
@@ -68,15 +68,19 @@ Then, Hdfs UI is available at:
 
 To undeploy:
 ```
-HADOOP_VERSION=2.7.7 docker-compose -f tests/docker-compose.yml  down
+docker-compose -f tests/docker-compose.yml  down
 ```
 
 ## Testing
 
-To test the cluster we provide two scripts:
+We have testing scripts for single and multiple datanode deployments, just provide the name of the docker image to test as environment variable `IMAGE_NAME`. for example:
 
-- `test-hdfs-single-datanode.sh `
-- `test-hdfs-multiple-datanodes.sh `
+```
+cd scripts/tests
+IMAGE_NAME=gradiant/hdfs:2.7.7 ./test-hdfs-single-datanode.sh
+IMAGE_NAME=gradiant/hdfs:2.7.7 ./test-hdfs-multiple-datanodes.sh
+
+```
 
 They deploy a hdfs cluster, create a folder in hdfs, copy a file from local to the folder, and remove file and folder. Finally they stop and remove the cluster containers.
 
