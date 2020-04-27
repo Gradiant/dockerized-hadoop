@@ -1,0 +1,3 @@
+scripts/
+docker-compose*
+.env
