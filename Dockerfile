@@ -16,7 +16,7 @@ ENV HADOOP_VERSION=$HADOOP_VERSION \
     USER=hdfs
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y curl procps && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y curl procps sed && \
     rm -rf /var/lib/apt/lists/* && \
     curl -SL "https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" | tar xvz -C /opt && \
     ln -s "/opt/hadoop-$HADOOP_VERSION" /opt/hadoop && \
@@ -30,7 +30,13 @@ RUN apt-get update && \
     mkdir -p /dfs && \
     mkdir -p /opt/hadoop/logs && \
     chown -R hdfs:hadoop /dfs && \
-    chown -LR hdfs:hadoop /opt/hadoop
+    chown -LR hdfs:hadoop /opt/hadoop && \
+    # fix dns issues with java, especially with short living containers
+    # 30s is generally recommended, lower values will just stress dns more, while higher values
+    # just tend to keep stale entries for too long
+    sed -i 's/.*networkaddress.cache.ttl.*/networkaddress.cache.ttl=30/g' /usr/local/openjdk-8/lib/security/java.security
+    # networkaddress.cache.negative.ttl=10 which is default
+
 
 
 COPY entrypoint.sh /entrypoint.sh
