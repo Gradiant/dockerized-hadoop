@@ -16,7 +16,7 @@ ENV HADOOP_VERSION=$HADOOP_VERSION \
     USER=hdfs
 
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y curl procps sed && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y curl dnsutils net-tools procps sed && \
     rm -rf /var/lib/apt/lists/* && \
     curl -SL "https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" | tar xvz -C /opt && \
     ln -s "/opt/hadoop-$HADOOP_VERSION" /opt/hadoop && \
